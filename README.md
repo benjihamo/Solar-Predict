@@ -1,15 +1,19 @@
-# Solar Predict v6
+# Solar Predict v7
 
-Mobile-first solar forecast PWA.
+A mobile-friendly solar generation predictor.
 
-## Features
-- Up to 4 independently configurable solar arrays
-- Array capacity, tilt and compass azimuth
-- Manual latitude/longitude or GPS
-- Open-Meteo global tilted irradiance (GTI) forecast
-- Battery capacity, SOC, minimum SOC and efficiency
-- Optional cheap overnight charging simulation
-- Editable electricity tariffs
-- Local settings saved in the browser
+## v7
+- Up to 4 custom solar arrays
+- Per-array kWp, tilt and azimuth
+- Open-Meteo GTI weather input
+- Battery simulation with correct per-day accounting
+- Editable battery and tariff settings
+- Manual/GPS location
+- Actual-generation entry and calibration history
+- Automatic median correction factor from recorded real production
 
-Defaults are configured around a 3 kWp example system, but users can change the setup for their own installation.
+## Calibration
+At the end of a day, enter the actual total solar generation. The app stores the raw forecast and actual result locally and uses the accumulated ratios to adjust future forecasts.
+
+## Run
+GitHub Pages can host the static app directly.
