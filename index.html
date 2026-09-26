@@ -21,7 +21,7 @@ label{display:block;font-size:13px;color:#a9bad0;margin:10px 0 5px}input,button{
 <section class="card"><h2>Solar arrays</h2>
 <div class="array"><h3>Pergola</h3><div class="grid"><div><label>Capacity (kWp)</label><input id="array1kwp" type="number" min=".1" step=".01" value="2"></div><div><label>Tilt (°)</label><input id="array1tilt" type="number" min="0" max="90" value="30"></div><div><label>Azimuth (°)</label><input id="array1azimuth" type="number" min="0" max="360" value="180"></div></div></div>
 <div class="array"><h3>Garage</h3><div class="grid"><div><label>Capacity (kWp)</label><input id="array2kwp" type="number" min=".1" step=".01" value="1"></div><div><label>Tilt (°)</label><input id="array2tilt" type="number" min="0" max="90" value="30"></div><div><label>Azimuth (°)</label><input id="array2azimuth" type="number" min="0" max="360" value="155"></div></div></div>
-<div class="muted small">Each array can have its own capacity and orientation.</div></section>
+<div class="muted small">Azimuth uses compass degrees: 0° north, 90° east, 180° south, 270° west.</div></section>
 <section class="card"><h2>Battery & tariff</h2><div class="grid">
 <div><label>Battery capacity (kWh)</label><input id="battery" type="number" min="0" step=".1" value="8"></div><div><label>Starting battery (%)</label><input id="soc" type="number" min="0" max="100" value="50"></div>
 <div><label>Minimum battery (%)</label><input id="minSoc" type="number" min="0" max="100" value="10"></div><div><label>Round-trip efficiency (%)</label><input id="efficiency" type="number" min="50" max="100" value="79"></div>
@@ -30,5 +30,5 @@ label{display:block;font-size:13px;color:#a9bad0;margin:10px 0 5px}input,button{
 <div><label>Cheap period ends (hour)</label><input id="nightEnd" type="number" min="1" max="24" value="6"></div></div>
 <label class="check"><input id="nightCharge" type="checkbox"> Simulate charging from cheap overnight electricity</label></section>
 <section class="card"><h2>Location</h2><div class="row"><input id="lat" type="number" step=".0001" value="53.4143" aria-label="Latitude"><input id="lon" type="number" step=".0001" value="-3.0647" aria-label="Longitude"></div><div class="row" style="margin-top:10px"><button id="save">Update forecast</button><button id="gps" class="secondary">Use my location</button></div><p id="status" class="muted"></p></section>
-<section class="card"><h2>Model</h2><p class="muted">Uses Open-Meteo hourly weather data to estimate each array using weather plus its tilt/azimuth, then simulates battery charging from the predicted solar generation.</p><span class="pill small">v4 • orientation-aware arrays + battery</span></section>
-</main><script src="app.js"></script></body></html>
+<section class="card"><h2>Model</h2><p class="muted">Uses Open-Meteo global tilted irradiance for each array, then estimates PV output and battery charging. Orientation is applied directly by the weather model.</p><span class="pill small">v5 • GTI + orientation + battery</span></section>
+</main><script src="app-v5.js?v=5"></script></body></html>
