@@ -1,0 +1,10 @@
+{
+  "name":"Solar Predict",
+  "short_name":"Solar Predict",
+  "start_url":".",
+  "display":"standalone",
+  "background_color":"#07111f",
+  "theme_color":"#0b1220",
+  "description":"Configurable solar generation predictor",
+  "icons":[]
+}

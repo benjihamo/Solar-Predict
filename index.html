@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Solar Predict</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#eef5ff;background:#07111f}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07111f,#0b1728);min-height:100vh}
+    main{max-width:780px;margin:auto;padding:18px 16px 40px}.muted{color:#9eb0c8}
+    .hero{display:flex;justify-content:space-between;align-items:end;gap:16px;padding:10px 2px 14px}
+    h1{margin:2px 0;font-size:30px}.big{font-size:38px;font-weight:850;white-space:nowrap}
+    .card{background:#101d30;border:1px solid #20324b;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 8px 30px #0003}
+    h2{font-size:18px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#0a1626;padding:13px;border-radius:12px}
+    .stat span{font-size:13px;color:#9eb0c8}.stat b{display:block;font-size:20px;margin-top:3px}
+    label{display:block;font-size:13px;color:#a9bad0;margin:10px 0 5px}
+    input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #304761;background:#0a1626;color:#fff;font-size:16px}
+    button{background:#1e8fff;border:0;font-weight:750;cursor:pointer}.secondary{background:#18283d}
+    .row{display:flex;gap:10px}.row>*{flex:1}.bar{height:10px;background:#20334d;border-radius:99px;overflow:hidden}
+    .bar i{display:block;height:100%;background:#49b5ff;border-radius:99px}.hour{display:grid;grid-template-columns:54px 1fr 78px;gap:8px;align-items:center;margin:9px 0;font-size:13px}
+    .error{color:#ff9c9c}.ok{color:#7ee2a8}.small{font-size:12px}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#18283d;color:#b9c9dc}
+    @media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}.big{font-size:32px}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <div><div class="muted">Solar Predictor</div><h1>Today's solar forecast</h1><div id="location" class="muted">Loading…</div></div>
+    <div id="today" class="big">—</div>
+  </div>
+
+  <section class="card">
+    <div class="grid3">
+      <div class="stat"><span>Today</span><b id="todayKwh">—</b></div>
+      <div class="stat"><span>Tomorrow</span><b id="tomorrowKwh">—</b></div>
+      <div class="stat"><span>Energy value</span><b id="value">—</b></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Hourly generation</h2>
+    <div id="hours"></div>
+  </section>
+
+  <section class="card">
+    <h2>System settings</h2>
+    <div class="grid">
+      <div><label>PV capacity (kWp)</label><input id="kwp" type="number" min=".1" step=".01" value="3.01"></div>
+      <div><label>Electricity price (£/kWh)</label><input id="price" type="number" min="0" step=".001" value=".31"></div>
+      <div><label>Panel tilt (°)</label><input id="tilt" type="number" min="0" max="90" value="30"></div>
+      <div><label>Azimuth (° from north)</label><input id="azimuth" type="number" min="0" max="360" value="180"></div>
+    </div>
+    <label>Location</label>
+    <div class="row">
+      <input id="lat" type="number" step=".0001" value="53.4143" aria-label="Latitude">
+      <input id="lon" type="number" step=".0001" value="-3.0647" aria-label="Longitude">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="save">Update forecast</button>
+      <button id="gps" class="secondary">Use my location</button>
+    </div>
+    <p id="status" class="muted"></p>
+  </section>
+
+  <section class="card">
+    <h2>Forecast model</h2>
+    <p class="muted">The first version combines hourly solar radiation, cloud cover and temperature with your PV capacity. Your settings are saved on the device.</p>
+    <span class="pill small">Next: battery + tariff optimisation</span>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
