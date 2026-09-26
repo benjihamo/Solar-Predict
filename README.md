@@ -2,27 +2,25 @@
 
 Mobile-first solar generation predictor.
 
-## Current version
-- Open-Meteo hourly weather forecast
-- Editable PV capacity
-- Editable electricity price
-- Editable panel tilt and azimuth
-- Editable latitude/longitude
-- Phone GPS location
-- Today and tomorrow generation estimate
-- Estimated monetary value
-- Local settings storage
+## v2
+- Separate Pergola and Garage arrays
+- Editable array capacity, tilt and azimuth
+- Battery capacity, starting SOC and minimum SOC
+- Battery round-trip efficiency
+- Home base load
+- Day and cheap overnight electricity rates
+- Optional cheap-rate battery charging simulation
+- Estimated battery cover, self-use and grid import
+- Editable location and phone GPS
+- Today and tomorrow forecast
 
 ## Run
-Serve the folder from a web server (for example GitHub Pages). Opening `index.html` directly may block API requests in some browsers.
+Serve from a web server such as GitHub Pages. The app uses Open-Meteo from the browser.
 
-## Planned v2
-- Separate panel strings/orientations
-- Battery capacity and state of charge
-- 31p day / 9p overnight tariff support
-- Grid import/export calculation
-- Battery charge/discharge losses
-- Historical calibration against actual generation
-- Better UK winter/summer PV model
-- PWA install improvements
-- Android APK packaging
+## Next
+- Calibrate against actual generation history
+- Better orientation/UK solar model
+- Separate battery charging/discharging strategies
+- Grid export
+- More accurate time-of-use optimisation
+- PWA icons and Android APK packaging
