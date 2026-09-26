@@ -2,7 +2,7 @@
 
 Mobile-first solar generation predictor.
 
-## v2
+## v3
 - Separate Pergola and Garage arrays
 - Editable array capacity, tilt and azimuth
 - Battery capacity, starting SOC and minimum SOC
