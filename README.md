@@ -1,18 +1,15 @@
-# Solar Predict v5
+# Solar Predict v6
 
 Mobile-first solar forecast PWA.
 
-## v5 changes
-- Uses Open-Meteo Global Tilted Irradiance (GTI) directly for each array.
-- Applies each array's tilt and compass azimuth to the weather request.
-- Compass azimuth in the UI: 0° north, 90° east, 180° south, 270° west.
-- Uses a unique `app-v5.js` filename to avoid stale browser caching.
-- Shows a visible error if the forecast request fails instead of remaining on Loading.
-- Keeps the simple battery charging simulation and 31p/9p tariff settings.
+## Features
+- Up to 4 independently configurable solar arrays
+- Array capacity, tilt and compass azimuth
+- Manual latitude/longitude or GPS
+- Open-Meteo global tilted irradiance (GTI) forecast
+- Battery capacity, SOC, minimum SOC and efficiency
+- Optional cheap overnight charging simulation
+- Editable electricity tariffs
+- Local settings saved in the browser
 
-## Current placeholder system values
-- Pergola: 2 kWp, 30°, 180° (south)
-- Garage: 1 kWp, 30°, 155° (SSE)
-- Battery: 8 kWh, 50% starting SOC, 10% minimum SOC, 79% round-trip efficiency
-
-These are editable in the app and should be replaced with measured system values during calibration.
+Defaults are configured around a 3 kWp example system, but users can change the setup for their own installation.
