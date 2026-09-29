@@ -1,4 +1,4 @@
-/* Sunwise v8.15. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.16. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
