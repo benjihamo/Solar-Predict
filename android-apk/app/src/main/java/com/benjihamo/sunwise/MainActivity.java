@@ -2,6 +2,7 @@ package com.benjihamo.sunwise;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -116,22 +117,32 @@ public final class MainActivity extends Activity {
         if (hasLocationPermission()) { callback.invoke(origin, true, false); return; }
         pendingLocationOrigin = origin;
         pendingLocationCallback = callback;
-        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST);
+        new AlertDialog.Builder(this)
+            .setTitle("Use your approximate location?")
+            .setMessage("Sunwise uses it to set your local forecast. Your coordinates are saved on this device and sent to Open-Meteo for the solar forecast. You can enter coordinates instead.")
+            .setNegativeButton("Not now", (dialog, which) -> finishLocationRequest(false))
+            .setPositiveButton("Continue", (dialog, which) -> requestPermissions(
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST))
+            .setOnCancelListener(dialog -> finishLocationRequest(false))
+            .show();
     }
 
     private boolean hasLocationPermission() {
-        return checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        return checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != LOCATION_REQUEST || pendingLocationCallback == null) return;
         boolean granted = hasLocationPermission();
-        pendingLocationCallback.invoke(pendingLocationOrigin, granted, false);
+        finishLocationRequest(granted);
+        if (!granted) Toast.makeText(this, "You can enter your coordinates in the app instead.", Toast.LENGTH_LONG).show();
+    }
+
+    private void finishLocationRequest(boolean granted) {
+        if (pendingLocationCallback != null) pendingLocationCallback.invoke(pendingLocationOrigin, granted, false);
         pendingLocationCallback = null;
         pendingLocationOrigin = null;
-        if (!granted) Toast.makeText(this, "You can enter your coordinates in the app instead.", Toast.LENGTH_LONG).show();
     }
 
     private View createErrorPanel() {
@@ -171,7 +182,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
-        if (pendingLocationCallback != null) pendingLocationCallback.invoke(pendingLocationOrigin, false, false);
+        finishLocationRequest(false);
         if (webView != null) { webView.stopLoading(); webView.destroy(); webView = null; }
         super.onDestroy();
     }

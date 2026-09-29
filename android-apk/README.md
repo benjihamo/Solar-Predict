@@ -2,7 +2,7 @@
 
 This small Android app opens the live Sunwise PWA at `https://benjihamo.github.io/Solar-Predict/`. Its screen, forecast data and PWA updates come from that site, so it requires an internet connection. Preferences and calibration remain local to this Android WebView installation; they do not sync automatically with the standalone browser/PWA.
 
-The wrapper supports Android 7.0 (API 24) and newer, and targets API 36 for current Play submissions. It asks for Android location permission only after the user taps the location control in Sunwise. If permission is declined, coordinates can still be entered manually.
+The wrapper supports Android 7.0 (API 24) and newer, and targets API 36 for current Play submissions. It asks for approximate Android location permission only after the user taps the location control in Sunwise and confirms the disclosure. If permission is declined, coordinates can still be entered manually.
 
 ## Build
 
