@@ -8,9 +8,9 @@ Serve this folder from an HTTPS static host (or `localhost` while developing), t
 
 ## Setup
 
-The first run is prefilled for a two-array 3 kWp system (2 kWp pergola and 1 kWp garage), 8 kWh battery, 50% starting charge, 10% reserve, 79% round-trip efficiency, and 31p / 9p day and cheap rates. The initial coordinates are a UK Wirral-area example and are editable. Check the panel direction and location before relying on the estimate. Expected daily household use starts at 5.5 kWh/day based on the supplied September total and is editable. The overnight target counts 65% of forecast solar against household use and adds a 12% cushion; treat it as a planning estimate because the app has no household load profile.
+The first run is prefilled for a two-array 3 kWp system (2 kWp pergola and 1 kWp garage), 8 kWh battery, 50% starting charge, 10% reserve, 79% round-trip efficiency, and 31p / 9p day and cheap rates. The initial coordinates are a UK Wirral-area example and are editable. Check the panel direction and location before relying on the estimate. The overnight charge guide uses a simple rule of thumb: battery capacity minus tomorrow’s solar forecast, adjusted to the current battery charge. Its cost estimate allows for the configured battery efficiency. It does not model hourly household use or control an inverter.
 
-Settings and up to 30 calibration readings are stored in this browser only. Calibration is based on finished-day total generation and is deliberately bounded. The battery simulation is an estimate and does not send commands to an inverter.
+Settings and up to 30 calibration readings are stored in this browser only. Calibration is based on finished-day total generation and is deliberately bounded. The battery estimate is a guide and does not send commands to an inverter.
 
 ## Notes
 
