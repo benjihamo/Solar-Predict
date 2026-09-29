@@ -7,6 +7,12 @@ on:
       - 'android-apk/**'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
+    inputs:
+      build_release:
+        description: 'Build a signed Play Store App Bundle (requires upload-key repository secrets)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -25,19 +31,49 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
-      - name: Set up Gradle 8.9
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - name: Set up Gradle 8.13
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.13'
+      - name: Configure Play upload key
+        if: ${{ inputs.build_release }}
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$UPLOAD_KEYSTORE_BASE64" || { echo 'Missing PLAY_UPLOAD_KEYSTORE_BASE64' >&2; exit 1; }
+          test -n "$UPLOAD_STORE_PASSWORD" || { echo 'Missing PLAY_UPLOAD_STORE_PASSWORD' >&2; exit 1; }
+          test -n "$UPLOAD_KEY_ALIAS" || { echo 'Missing PLAY_UPLOAD_KEY_ALIAS' >&2; exit 1; }
+          test -n "$UPLOAD_KEY_PASSWORD" || { echo 'Missing PLAY_UPLOAD_KEY_PASSWORD' >&2; exit 1; }
+          printf '%s' "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/play-upload-key.jks"
+          echo "UPLOAD_KEYSTORE_PATH=$RUNNER_TEMP/play-upload-key.jks" >> "$GITHUB_ENV"
+          echo "UPLOAD_STORE_PASSWORD=$UPLOAD_STORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "UPLOAD_KEY_ALIAS=$UPLOAD_KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "UPLOAD_KEY_PASSWORD=$UPLOAD_KEY_PASSWORD" >> "$GITHUB_ENV"
       - name: Build debug APK
         run: gradle --no-daemon --stacktrace assembleDebug
+        working-directory: android-apk
+      - name: Build signed Play Store bundle
+        if: ${{ inputs.build_release }}
+        run: gradle --no-daemon --stacktrace bundleRelease
         working-directory: android-apk
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
           name: sunwise-android-debug
           path: android-apk/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload signed Play Store bundle
+        if: ${{ inputs.build_release }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunwise-play-store-aab
+          path: android-apk/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
 

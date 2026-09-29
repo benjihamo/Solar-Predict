@@ -16,5 +16,5 @@ Settings and up to 30 calibration readings are stored in this browser only. Cali
 
 - Per-array tilted irradiance and temperature data come from Open-Meteo.
 - Solar value is a simple day-rate comparison and does not account for household demand or export payments.
-- The web app is PWA-ready. A lightweight Android WebView wrapper and GitHub Actions debug APK build live in `android-apk/`; see its README for installation notes. The wrapper loads the hosted site and needs internet access. It is not a Play Store release.
+- The web app is PWA-ready. A lightweight Android WebView wrapper and GitHub Actions APK/AAB build live in `android-apk/`; see its README for installation and Play upload-key setup. The wrapper loads the hosted site and needs internet access.
 

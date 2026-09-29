@@ -4,14 +4,38 @@ plugins {
 
 android {
     namespace 'com.benjihamo.sunwise'
-    compileSdk 35
+    compileSdk 36
+
+    def releaseStorePath = System.getenv('UPLOAD_KEYSTORE_PATH')
+    def releaseStorePassword = System.getenv('UPLOAD_STORE_PASSWORD')
+    def releaseKeyAlias = System.getenv('UPLOAD_KEY_ALIAS')
+    def releaseKeyPassword = System.getenv('UPLOAD_KEY_PASSWORD')
 
     defaultConfig {
         applicationId 'com.benjihamo.sunwise'
         minSdk 24
-        targetSdk 35
-        versionCode 8
-        versionName '8.0'
+        targetSdk 36
+        versionCode 9
+        versionName '8.1.0'
+    }
+
+    signingConfigs {
+        if (releaseStorePath && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+            release {
+                storeFile file(releaseStorePath)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (releaseStorePath && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
 }
 
