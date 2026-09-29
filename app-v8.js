@@ -1,4 +1,4 @@
-/* Sunwise v8.6. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.7. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
@@ -89,7 +89,7 @@
     $("chargeReason").textContent=charge.reason;
     if(!charge.hasBattery){$("chargeAmount").textContent="—";$("chargeCaption").textContent="Add battery storage size";$("chargeSummary").textContent=charge.reason;}
     else if(charge.add>0.05){$("chargeAmount").textContent=charge.add.toFixed(1)+" kWh";$("chargeCaption").textContent="into the battery · about "+charge.fraction.toFixed(0)+"% of capacity";$("chargeSummary").textContent="Add about "+charge.add.toFixed(1)+" kWh overnight. Your current battery charge is not used in this calculation.";}
-    else{$("chargeAmount").textContent="No top-up";$("chargeCaption").textContent="Solar forecast meets storage estimate";$("chargeSummary").textContent="No cheap-rate top-up suggested by this simple estimate.";}
+    else{$("chargeAmount").textContent="No top-up";$("chargeCaption").textContent="Solar after home use meets storage estimate";$("chargeSummary").textContent="No cheap-rate top-up suggested by this simple estimate.";}
     forecastState={date:today,raw:rawToday,rawTomorrow,solar:a,tomorrow:b};
     renderHistory();
     setStatus(`Forecast ready. Calibration adjustment: ${f.toFixed(2)}×. Weather changes can make real generation different.`,"ok");
