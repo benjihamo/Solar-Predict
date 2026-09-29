@@ -1,9 +1,14 @@
 {
-  "name":"Solar Predict",
-  "short_name":"Solar Predict",
-  "start_url":"./?v=7",
-  "display":"standalone",
-  "background_color":"#07111f",
-  "theme_color":"#07111f",
-  "description":"Customisable solar generation forecasting and calibration."
+  "name": "Sunwise · Solar forecast",
+  "short_name": "Sunwise",
+  "start_url": "./?v=8",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#071a19",
+  "theme_color": "#071a19",
+  "description": "Clear, local-first solar generation and battery forecasts.",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
 }
+

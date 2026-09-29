@@ -1,6 +1,6 @@
-# Solar Predict
+# Solar Predict v8
 
-## v8 development
-Baseline: v7 custom arrays + GTI + calibration.
+v7 retained as the forecasting baseline in `app-v7.js`.
 
-Next focus: production-ready PWA polish, forecast confidence, battery/tariff optimisation, and APK packaging.
+v8 adds the Sunwise mobile-first interface, guided/validated setup, clearer hourly forecast and tariff guidance, bounded per-installation calibration, device-local settings, and an offline PWA shell. Android APK packaging remains a separate next step.
+

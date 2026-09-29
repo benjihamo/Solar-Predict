@@ -1,87 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07111f">
-<link rel="manifest" href="manifest.webmanifest">
-<title>Solar Predict</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071a19"><meta name="description" content="Clear, local-first solar generation and battery forecasts.">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Sunwise · Solar forecast</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#eef5ff;background:#07111f}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07111f,#0b1728);min-height:100vh}
-main{max-width:820px;margin:auto;padding:18px 16px 40px}.muted{color:#9eb0c8}
-.hero{display:flex;justify-content:space-between;align-items:end;gap:16px;padding:10px 2px 14px}
-h1{margin:2px 0;font-size:30px}.big{font-size:38px;font-weight:850;white-space:nowrap}
-.card{background:#101d30;border:1px solid #20324b;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 8px 30px #0003}
-h2{font-size:18px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#0a1626;padding:13px;border-radius:12px}
-.stat span{font-size:13px;color:#9eb0c8}.stat b{display:block;font-size:20px;margin-top:3px}
-label{display:block;font-size:13px;color:#a9bad0;margin:10px 0 5px}
-input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #304761;background:#0a1626;color:#fff;font-size:16px}
-button{background:#1e8fff;border:0;font-weight:750}.secondary{background:#18283d}
-.row{display:flex;gap:10px}.row>*{flex:1}.bar{height:10px;background:#20334d;border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:#49b5ff;border-radius:99px}.hour{display:grid;grid-template-columns:54px 1fr 78px;gap:8px;align-items:center;margin:9px 0;font-size:13px}
-.error{color:#ff9c9c}.ok{color:#7ee2a8}.small{font-size:12px}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#18283d;color:#b9c9dc}
-.array{border:1px solid #20324b;border-radius:14px;padding:12px;margin:10px 0;background:#0b1728}
-.array h3{margin:0;font-size:15px}.array .grid{grid-template-columns:repeat(3,1fr)}
-.check{display:flex;align-items:center;gap:8px;margin-top:10px}.check input{width:auto}
-.history{width:100%;border-collapse:collapse;font-size:13px}.history th,.history td{text-align:left;padding:8px 5px;border-bottom:1px solid #20324b}
-.good{color:#7ee2a8}.warn{color:#ffd27d}.danger{color:#ff9c9c}
-@media(max-width:560px){.grid3{grid-template-columns:1fr 1fr}.array .grid{grid-template-columns:1fr 1fr}.big{font-size:32px}.hero{align-items:flex-start;flex-direction:column}}
-</style>
-</head>
+:root{color-scheme:dark;--bg:#071a19;--panel:#102522;--panel2:#15312c;--line:#28443e;--ink:#f4f5e9;--muted:#b0c2b7;--lime:#d1fa70;--mint:#66d6b3;--amber:#ffd07b;--red:#ff9b91;font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 82% -18%,#254a3b 0,transparent 40%),var(--bg);color:var(--ink);min-height:100vh}button,input{font:inherit}button{cursor:pointer}main{max-width:1040px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom))}.top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}.brand{color:var(--lime);font-weight:850;letter-spacing:.08em}.hero{padding:48px 0 28px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:20px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;color:var(--mint)}h1{font-size:clamp(38px,8vw,72px);line-height:1.01;letter-spacing:-.055em;margin:10px 0 12px;max-width:700px}.intro{color:var(--muted);max-width:620px;margin:0}.hero-kwh{font-size:clamp(26px,5vw,42px);font-weight:850;color:var(--lime);text-align:right;white-space:nowrap}.panel{background:linear-gradient(145deg,#142b27,#0e211f);border:1px solid var(--line);border-radius:22px;padding:22px;margin:14px 0;box-shadow:0 18px 50px #0002}.panel-head{display:flex;align-items:start;justify-content:space-between;gap:16px;margin-bottom:18px}h2{font-size:20px;letter-spacing:-.02em;margin:0}h3{font-size:16px;margin:0}.hint{color:var(--muted);font-size:14px;margin:5px 0 0}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#091d1a;border:1px solid #203b35;border-radius:15px;padding:16px;min-width:0}.stat span{color:var(--muted);display:block;font-size:13px}.stat b{display:block;font-size:clamp(18px,3vw,25px);margin-top:5px;overflow-wrap:anywhere}.stat.highlight b{color:var(--lime)}.recommend{border-left:4px solid var(--lime);background:#1a3023;border-radius:12px;padding:15px 17px;margin-top:16px}.recommend strong{color:var(--lime)}.chart{display:grid;gap:10px}.hour{display:grid;grid-template-columns:54px 1fr 82px;gap:12px;align-items:center;font-size:14px}.track{height:13px;border-radius:20px;background:#203a34;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--lime));border-radius:20px;min-width:2px}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 14px}.fields4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 12px}.field{min-width:0}label{display:block;font-size:13px;font-weight:700;color:#d3ded6;margin:12px 0 6px}label .help{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}input{width:100%;border:1px solid #38564d;border-radius:11px;background:#081a18;color:var(--ink);padding:12px;min-height:48px}input:focus,button:focus-visible{outline:3px solid var(--lime);outline-offset:2px}.array{background:#0b201d;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}.array-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.array-title{color:var(--mint);font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.btn{border:0;border-radius:12px;background:var(--lime);color:#102018;font-weight:850;padding:13px 17px;min-height:48px}.btn:hover{filter:brightness(1.06)}.btn.secondary{background:#213a34;border:1px solid #3a574e;color:var(--ink)}.btn.danger{color:var(--red);background:#382421;border:1px solid #70423a;padding:8px 12px;min-height:40px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.actions>*{flex:1}.check{display:flex;align-items:center;gap:11px;margin-top:16px;color:var(--ink);font-weight:650}.check input{width:22px;height:22px;min-height:0;accent-color:var(--lime)}.note{padding:13px 15px;border-radius:12px;background:#0a1e1b;color:var(--muted);font-size:14px;margin-top:14px}.status{margin:12px 0 0;color:var(--muted);min-height:1.5em}.status.error{color:var(--red)}.status.ok{color:var(--mint)}.pill{background:#20392e;color:var(--lime);padding:5px 10px;border-radius:99px;font-size:12px;font-weight:800}.history{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}th{color:var(--muted)}.accuracy{color:var(--mint)}.empty{color:var(--muted);padding:18px 0}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}footer{color:var(--muted);font-size:12px;padding:18px 2px}.hidden{display:none!important}
+@media(max-width:700px){main{padding-left:14px;padding-right:14px}.hero{padding:36px 0 20px;grid-template-columns:1fr}.hero-kwh{text-align:left}.stats{grid-template-columns:repeat(2,1fr)}.fields4{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:18px;border-radius:18px}.panel-head{align-items:center}}
+@media(max-width:390px){.field-grid,.fields4{grid-template-columns:1fr}.hour{grid-template-columns:48px 1fr 72px;gap:8px}.stat{padding:13px}}
+</style></head>
 <body><main>
-<div class="hero"><div><div class="muted">Solar Predictor</div><h1>Today's solar forecast</h1><div id="location" class="muted">Loading…</div></div><div id="today" class="big">—</div></div>
+<header class="top"><div class="brand">☼ SUNWISE</div><div>Solar, made simple <span class="pill">v8</span></div></header>
+<section class="hero"><div><div class="eyebrow">Your energy outlook</div><h1>Make the most<br>of your sunshine.</h1><p class="intro">A friendly, best-effort forecast for your panels and battery. Check the plan, tweak your setup, and let real readings improve tomorrow’s estimate.</p></div><div id="heroValue" class="hero-kwh" aria-live="polite">Getting forecast…</div></section>
+<section class="panel" aria-labelledby="summaryTitle"><div class="panel-head"><div><h2 id="summaryTitle">Your forecast</h2><p id="location" class="hint">Getting your local forecast…</p></div><span id="updated" class="pill">Loading</span></div><div class="stats"><div class="stat highlight"><span>Today’s solar</span><b id="todayKwh">—</b></div><div class="stat"><span>Tomorrow</span><b id="tomorrowKwh">—</b></div><div class="stat"><span>Solar value*</span><b id="value">—</b></div><div class="stat"><span>Into battery</span><b id="solarToBattery">—</b></div><div class="stat"><span>Battery by tonight</span><b id="endSoc">—</b></div><div class="stat"><span>Weather data</span><b id="modelLabel">Open-Meteo</b></div></div><div id="recommendation" class="recommend" aria-live="polite">Preparing your simple plan…</div><p class="hint">*Estimated value uses your day rate and assumes every generated unit offsets a unit you would otherwise buy. Actual savings depend on your usage and export tariff.</p></section>
+<section class="panel"><div class="panel-head"><div><h2>Sunlight through the day</h2><p class="hint">Estimated electricity from all your arrays, hour by hour.</p></div></div><div id="hours" class="chart" role="list" aria-label="Hourly solar generation"></div></section>
+<section class="panel"><div class="panel-head"><div><h2>1 · Your panels</h2><p class="hint">Add each roof or pergola separately if it faces a different direction.</p></div></div><div id="arrays"></div><button id="addArray" class="btn secondary" type="button">＋ Add another set of panels</button><div class="note">Capacity is the total panel power in kWp. Tilt is the slope from flat (0°) to vertical (90°). Azimuth is the compass direction: south 180°, east 90°, west 270°.</div></section>
+<section class="panel"><div class="panel-head"><div><h2>2 · Battery & electricity rates</h2><p class="hint">We use these to estimate charging and give a sensible overnight suggestion.</p></div></div><div class="fields4">
+<div class="field"><label for="battery">Battery size <span class="help">Usable capacity, kWh</span></label><input id="battery" type="number" min="0" max="100" step="0.1" inputmode="decimal"></div>
+<div class="field"><label for="soc">Battery right now <span class="help">Starting charge, %</span></label><input id="soc" type="number" min="0" max="100" step="1" inputmode="numeric"></div>
+<div class="field"><label for="minSoc">Keep in reserve <span class="help">Minimum charge, %</span></label><input id="minSoc" type="number" min="0" max="100" step="1" inputmode="numeric"></div>
+<div class="field"><label for="efficiency">Battery efficiency <span class="help">Round trip, %</span></label><input id="efficiency" type="number" min="50" max="100" step="1" inputmode="numeric"></div>
+<div class="field"><label for="dayPrice">Day rate <span class="help">Pence per kWh</span></label><input id="dayPrice" type="number" min="0" max="500" step="0.1" inputmode="decimal"></div>
+<div class="field"><label for="nightPrice">Cheap rate <span class="help">Pence per kWh</span></label><input id="nightPrice" type="number" min="0" max="500" step="0.1" inputmode="decimal"></div>
+<div class="field"><label for="nightStart">Cheap period starts <span class="help">24-hour clock</span></label><input id="nightStart" type="time"></div>
+<div class="field"><label for="nightEnd">Cheap period ends <span class="help">24-hour clock</span></label><input id="nightEnd" type="time"></div>
+</div><label class="check"><input id="nightCharge" type="checkbox"> Include overnight grid charging in the battery estimate</label><p class="hint">This is a planning estimate, not a control signal. Check your inverter’s charge limits and tariff times before changing a real charging schedule.</p></section>
+<section class="panel"><div class="panel-head"><div><h2>3 · Your location</h2><p class="hint">Forecasts use your coordinates. They stay in this browser.</p></div></div><div class="field-grid"><div class="field"><label for="lat">Latitude</label><input id="lat" type="number" min="-90" max="90" step="0.0001" inputmode="decimal"></div><div class="field"><label for="lon">Longitude</label><input id="lon" type="number" min="-180" max="180" step="0.0001" inputmode="decimal"></div></div><div class="actions"><button id="save" class="btn" type="button">Save setup & refresh</button><button id="gps" class="btn secondary" type="button">Use my device location</button></div><p id="status" class="status" role="status" aria-live="polite"></p></section>
+<section class="panel"><div class="panel-head"><div><h2>Help the forecast learn</h2><p class="hint">After the day is finished, enter the solar total your inverter recorded. We’ll gently tune future estimates.</p></div></div><div class="field-grid"><div class="field"><label for="actualToday">Actual solar today <span class="help">Total from your inverter, kWh</span></label><input id="actualToday" type="number" min="0" max="500" step="0.01" placeholder="For example, 6.8" inputmode="decimal"></div><div class="field"><label>&nbsp;</label><button id="recordActual" class="btn" type="button">Save today’s reading</button></div></div><p id="calibrationSummary" class="hint"></p><div id="historyBox" class="history"></div></section>
+<footer>Forecasts are estimates from weather data and your setup. Clouds, shading, inverter limits, household use and battery behaviour can all change the result. This app does not control your equipment. Your settings and calibration history are saved on this device only.</footer>
+</main><script src="app-v8.js?v=8"></script><script>if('serviceWorker'in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}</script></body></html>
 
-<section class="card"><div class="grid3">
-<div class="stat"><span>Solar today</span><b id="todayKwh">—</b></div>
-<div class="stat"><span>Solar tomorrow</span><b id="tomorrowKwh">—</b></div>
-<div class="stat"><span>Solar value</span><b id="value">—</b></div>
-<div class="stat"><span>Battery solar</span><b id="batteryCharged">—</b></div>
-<div class="stat"><span>Solar to battery</span><b id="solarToBattery">—</b></div>
-<div class="stat"><span>Ending battery</span><b id="endSoc">—</b></div>
-</div></section>
-
-<section class="card"><h2>Hourly solar generation</h2><div id="hours"></div></section>
-
-<section class="card"><h2>Solar arrays</h2>
-<div id="arrays"></div>
-<button id="addArray" class="secondary" type="button">+ Add solar array</button>
-<p class="muted small">Up to 4 arrays. Each can have its own capacity, tilt and azimuth. 0° tilt means flat.</p>
-</section>
-
-<section class="card"><h2>Battery & tariff</h2><div class="grid">
-<div><label>Battery capacity (kWh)</label><input id="battery" type="number" min="0" step=".1" value="8"></div>
-<div><label>Starting battery (%)</label><input id="soc" type="number" min="0" max="100" value="50"></div>
-<div><label>Minimum battery (%)</label><input id="minSoc" type="number" min="0" max="100" value="10"></div>
-<div><label>Round-trip efficiency (%)</label><input id="efficiency" type="number" min="50" max="100" value="79"></div>
-<div><label>Day rate (£/kWh)</label><input id="dayPrice" type="number" min="0" step=".001" value=".31"></div>
-<div><label>Cheap rate (£/kWh)</label><input id="nightPrice" type="number" min="0" step=".001" value=".09"></div>
-<div><label>Cheap period starts (hour)</label><input id="nightStart" type="number" min="0" max="23" value="0"></div>
-<div><label>Cheap period ends (hour)</label><input id="nightEnd" type="number" min="1" max="24" value="6"></div>
-</div>
-<label class="check"><input id="nightCharge" type="checkbox"> Simulate charging from cheap overnight electricity</label>
-</section>
-
-<section class="card"><h2>Calibration</h2>
-<p class="muted small">Enter the actual total solar produced at the end of a day. Solar Predict uses your history to correct future forecasts for your installation.</p>
-<div class="grid">
-<div><label>Actual solar for today (kWh)</label><input id="actualToday" type="number" min="0" step=".01" placeholder="e.g. 6.8"></div>
-<div><label>&nbsp;</label><button id="recordActual" type="button">Save actual</button></div>
-</div>
-<div id="calibrationSummary" class="muted small" style="margin-top:12px"></div>
-<div id="historyBox" style="margin-top:12px"></div>
-</section>
-
-<section class="card"><h2>Location</h2>
-<div class="row"><input id="lat" type="number" step=".0001" value="53.4143" aria-label="Latitude"><input id="lon" type="number" step=".0001" value="-3.0647" aria-label="Longitude"></div>
-<div class="row" style="margin-top:10px"><button id="save" type="button">Update forecast</button><button id="gps" class="secondary" type="button">Use my location</button></div>
-<p id="status" class="muted"></p></section>
-
-<section class="card"><h2>Model</h2>
-<p class="muted">Uses Open-Meteo global tilted irradiance for each array, then estimates PV output and battery charging. Calibration learns from your real production history.</p>
-<span class="pill small">v7 • custom arrays + GTI + calibration</span>
-</section>
-</main>
-<script src="app-v7.js?v=7"></script>
-</body></html>
