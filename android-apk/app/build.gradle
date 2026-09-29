@@ -1,0 +1,17 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.benjihamo.sunwise'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.benjihamo.sunwise'
+        minSdk 24
+        targetSdk 35
+        versionCode 8
+        versionName '8.0'
+    }
+}
+
