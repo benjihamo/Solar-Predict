@@ -1,4 +1,4 @@
-/* Sunwise v8.16. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.17. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
@@ -44,6 +44,7 @@
     if(!s) { try{s=JSON.parse(localStorage.getItem("solar-predict-settings-v7")||"null");fromV7=!!s;}catch{} }
     const saved=s||{};
     s={...DEFAULTS,...saved};
+    if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(s.cheapRateEnd))s.cheapRateEnd=DEFAULTS.cheapRateEnd;
     if(!Object.prototype.hasOwnProperty.call(saved,"weekdayConsumption")&&Number.isFinite(Number(saved.dailyConsumption)))s.weekdayConsumption=Number(saved.dailyConsumption);
     if(!Object.prototype.hasOwnProperty.call(saved,"weekendConsumption")&&Number.isFinite(Number(saved.dailyConsumption)))s.weekendConsumption=Number(saved.dailyConsumption);
     delete s.dailyConsumption;
