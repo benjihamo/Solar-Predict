@@ -81,12 +81,13 @@
     const bufferedUse=s.dailyUse*1.12, uncovered=Math.max(0,bufferedUse-solarCover);
     const availableCapacity=s.battery*(1-reserve/100);
     const storedNeeded=Math.min(availableCapacity,uncovered/Math.max(0.5,dischargeEfficiency));
-    const needed=Math.min(100,Math.max(reserve,Math.ceil(reserve+storedNeeded/s.battery*100)));
-    const current=Math.max(reserve,Math.min(100,s.soc)), topUp=current+0.5<needed, action=topUp?needed:current;
-    const extraKwh=topUp?Math.max(0,(action-current)/100*s.battery/dischargeEfficiency):0, cost=extraKwh*s.nightPrice/100;
+    const forecastTarget=Math.min(100,Math.max(reserve,Math.ceil(reserve+storedNeeded/s.battery*100)));
     const deliveredNightCost=s.nightPrice/Math.max(0.5,s.efficiency/100), cheaper=deliveredNightCost<s.dayPrice;
-    const reason="We expect "+s.dailyUse.toFixed(1)+" kWh of household use. Tomorrow’s forecast is "+Math.max(0,solarTomorrow).toFixed(1)+" kWh; the estimate counts "+solarCover.toFixed(1)+" kWh of that against your use because sunshine and demand may happen at different times. It keeps your "+reserve+"% reserve and adds a 12% cushion for forecast and usage variation. At "+s.nightPrice.toFixed(1)+"p overnight and "+s.dayPrice.toFixed(1)+"p daytime, cheap-rate energy is estimated at "+deliveredNightCost.toFixed(1)+"p per delivered kWh after battery losses, so overnight energy is "+(cheaper?"currently cheaper":"not cheaper")+" than daytime electricity.";
-    return {hasBattery:true,needed,topUp,extraKwh,cost,solarCover,reason,cheaper};
+    const needed=cheaper?forecastTarget:reserve;
+    const current=Math.max(0,Math.min(100,s.soc)), topUp=current+0.5<needed, action=topUp?needed:current;
+    const extraKwh=topUp?Math.max(0,(action-current)/100*s.battery/dischargeEfficiency):0, cost=extraKwh*s.nightPrice/100;
+    const reason="We expect "+s.dailyUse.toFixed(1)+" kWh of household use. Tomorrow’s forecast is "+Math.max(0,solarTomorrow).toFixed(1)+" kWh; the estimate counts "+solarCover.toFixed(1)+" kWh of that against your use because sunshine and demand may happen at different times. It keeps your "+reserve+"% reserve and adds a 12% cushion for forecast and usage variation. At "+s.nightPrice.toFixed(1)+"p between "+s.nightStart+" and "+s.nightEnd+", stored energy costs an estimated "+deliveredNightCost.toFixed(1)+"p per delivered kWh after battery losses, versus "+s.dayPrice.toFixed(1)+"p in the day. "+(cheaper?"That makes overnight charging the cheaper option.":"Overnight charging is not cheaper, so the suggested target is just your reserve.")+(cheaper?"":" The forecast-based target would otherwise be "+forecastTarget+"%.");
+    return {hasBattery:true,needed,forecastTarget,topUp,extraKwh,cost,solarCover,reason,cheaper};
   }
   function renderForecast(s,meteo) {
     const times=meteo[0].hourly.time, today=times[0].slice(0,10), tomorrow=times.find(t=>t.slice(0,10)!==today)?.slice(0,10);
