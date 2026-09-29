@@ -99,9 +99,9 @@
     $("chargeHeadroom").textContent=charge.hasBattery?charge.headroom.toFixed(1)+" kWh":"—";
     $("chargeReason").textContent=charge.reason;
     $("chargeProfile").textContent=charge.hasBattery?charge.solarCheck:"Add a battery size to get a target.";
-    $("chargeAmount").textContent=charge.hasBattery?charge.targetSoc.toFixed(0)+"%":"—";
-    $("chargeCaption").textContent=charge.hasBattery?"minimum target SOC":"Add battery storage size";
-    $("chargeSummary").textContent=charge.hasBattery?"Reach "+charge.targetSoc.toFixed(0)+"% to cover the estimated overnight need and minimum reserve. Enter a starting SOC below only if you want the charge amount and cost estimate.":"Enter usable battery size to calculate a target.";
+    $("chargeHeadlineSoc").textContent=charge.hasBattery?charge.targetSoc.toFixed(0)+"%":"—";
+    
+    $("chargeSummary").textContent=charge.hasBattery?"Based on "+charge.overnightUse.toFixed(1)+" kWh overnight use + "+s.minimumSocPct.toFixed(0)+"% reserve.":"Enter usable battery size to calculate a target.";
     forecastState={date:today,raw:rawToday,rawTomorrow,solar:a,tomorrow:b,settings:s,charge};
     renderHistory();
     renderTopupDetails();
