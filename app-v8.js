@@ -1,4 +1,4 @@
-/* Sunwise v8.10. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.11. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
@@ -6,7 +6,7 @@
   const HISTORY_KEY = "solar-predict-history-v1";
   const DEFAULTS = {
     arrays: [{name:"Pergola",kwp:2,tilt:0,azimuth:180},{name:"Garage",kwp:1,tilt:0,azimuth:155}],
-    battery:8,dailyConsumption:5,baseLoadW:300,overnightHours:8,efficiency:79,dayPrice:31,nightPrice:9,lat:53.4143,lon:-3.0647
+    battery:8,minimumSocPct:10,dailyConsumption:5,baseLoadW:300,overnightHours:8,efficiency:79,dayPrice:31,nightPrice:9,lat:53.4143,lon:-3.0647
   };
   let arrays = structuredClone(DEFAULTS.arrays);
   let forecastState = null;
@@ -18,7 +18,7 @@
   function readSettings() {
     return {
       arrays: arrays.map(a => ({name:String(a.name).trim(),kwp:Number(a.kwp),tilt:Number(a.tilt),azimuth:Number(a.azimuth)})),
-      battery:number("battery"),dailyConsumption:number("dailyConsumption"),baseLoadW:number("baseLoadW"),overnightHours:number("overnightHours"),efficiency:number("efficiency"),
+      battery:number("battery"),minimumSocPct:number("minimumSocPct"),dailyConsumption:number("dailyConsumption"),baseLoadW:number("baseLoadW"),overnightHours:number("overnightHours"),efficiency:number("efficiency"),
       dayPrice:number("dayPrice"),nightPrice:number("nightPrice"),lat:number("lat"),lon:number("lon")
     };
   }
@@ -32,8 +32,8 @@
       if (!Number.isFinite(a.tilt)||a.tilt<0||a.tilt>90) return `${label}: tilt must be between 0° and 90°.`;
       if (!Number.isFinite(a.azimuth)||a.azimuth<0||a.azimuth>360) return `${label}: compass direction must be between 0° and 360°.`;
     }
-    const limits={battery:[0,100],dailyConsumption:[0,100],baseLoadW:[0,10000],overnightHours:[1,16],efficiency:[50,100],dayPrice:[0,500],nightPrice:[0,500],lat:[-90,90],lon:[-180,180]};
-    const labels={battery:"Battery size",dailyConsumption:"Daily home use",baseLoadW:"Overnight base load",overnightHours:"Overnight hours",efficiency:"Battery efficiency",dayPrice:"Day rate",nightPrice:"Cheap rate",lat:"Latitude",lon:"Longitude"};
+    const limits={battery:[0,100],minimumSocPct:[0,100],dailyConsumption:[0,100],baseLoadW:[0,10000],overnightHours:[1,16],efficiency:[50,100],dayPrice:[0,500],nightPrice:[0,500],lat:[-90,90],lon:[-180,180]};
+    const labels={battery:"Battery size",minimumSocPct:"Minimum battery reserve",dailyConsumption:"Daily home use",baseLoadW:"Overnight base load",overnightHours:"Overnight hours",efficiency:"Battery efficiency",dayPrice:"Day rate",nightPrice:"Cheap rate",lat:"Latitude",lon:"Longitude"};
     for(const [id,[min,max]] of Object.entries(limits)) { const v=s[id]; if(!Number.isFinite(v)||v<min||v>max)return `${labels[id]} must be between ${min} and ${max}${id.includes("Price")?" p/kWh":""}.`; }
     return "";
   }
@@ -46,7 +46,7 @@
     try { if(!localStorage.getItem(dailyDefaultMigration)&&s.dailyConsumption===0)s.dailyConsumption=5; localStorage.setItem(dailyDefaultMigration,"1"); } catch {}
     if(fromV7){s.dayPrice=Number(s.dayPrice)*100;s.nightPrice=Number(s.nightPrice)*100;}
     if(Array.isArray(s.arrays)&&s.arrays.length) arrays=s.arrays.slice(0,4).map(a=>({...a}));
-    for(const id of ["battery","dailyConsumption","baseLoadW","overnightHours","efficiency","dayPrice","nightPrice","lat","lon"]) if($(id))$(id).value=s[id];  }
+    for(const id of ["battery","minimumSocPct","dailyConsumption","baseLoadW","overnightHours","efficiency","dayPrice","nightPrice","lat","lon"]) if($(id))$(id).value=s[id];  }
   function getHistory() { try { const h=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]"); return Array.isArray(h)?h.filter(x=>x&&/^\d{4}-\d\d-\d\d$/.test(x.date)&&Number.isFinite(+x.raw)&&+x.raw>0&&Number.isFinite(+x.actual)&&+x.actual>=0).slice(-30):[]; } catch{return [];} }
   function factor() { const h=getHistory(); if(!h.length)return 1; const ratios=h.map(x=>Math.max(.4,Math.min(1.6,+x.actual/+x.raw))).sort((a,b)=>a-b), m=Math.floor(ratios.length/2); return ratios.length%2?ratios[m]:(ratios[m-1]+ratios[m])/2; }
   function renderHistory() {
@@ -65,15 +65,20 @@
   function estimate(gti,kwp,temp) { if(!Number.isFinite(+gti))return 0;const tempC=Number.isFinite(+temp)?+temp:15,thermal=1-Math.max(0,tempC-25)*.004;return Math.max(0,kwp*(Math.max(0,+gti)/1000)*.88*thermal); }
   function localDateTime(iso) { return {date:iso.slice(0,10),hour:+iso.slice(11,13),minute:+iso.slice(14,16)}; }
   function chargePlan(s,solarTomorrow) {
-    if(s.battery<=0)return {hasBattery:false,add:0,gridKwh:0,cost:0,fraction:0,reason:"Enter your battery storage size to get a simple charge estimate."};
+    if(s.battery<=0)return {hasBattery:false,reason:"Enter your usable battery size to calculate a target."};
     const capacity=s.battery,solar=Math.max(0,solarTomorrow),consumption=Math.max(0,s.dailyConsumption);
-    let add,reason;
-    const solarUsed=Math.min(solar,consumption),solarAfterUse=solar-solarUsed;
-    add=Math.min(capacity,Math.max(0,capacity-solarAfterUse));
     const overnightUse=s.baseLoadW*s.overnightHours/1000;
-    reason=solar.toFixed(1)+" kWh solar − "+solarUsed.toFixed(1)+" kWh home use = "+solarAfterUse.toFixed(1)+" kWh left; "+capacity.toFixed(1)+" kWh battery − "+solarAfterUse.toFixed(1)+" kWh left = "+add.toFixed(1)+" kWh to add. Your overnight estimate is "+overnightUse.toFixed(1)+" kWh ("+s.baseLoadW+" W × "+s.overnightHours+" hours); daily home use already includes it, so it is shown separately and not counted twice. Bedtime battery charge is not measured. This is daily-total maths, not hourly modelling.";
-    const fraction=capacity?add/capacity*100:0,gridKwh=add/(s.efficiency/100),cost=gridKwh*s.nightPrice/100;
-    return {hasBattery:true,add,gridKwh,cost,fraction,solar,consumption,overnightUse,reason};
+    const reserveKwh=capacity*s.minimumSocPct/100;
+    const requiredKwh=Math.min(capacity,reserveKwh+overnightUse);
+    const targetSoc=requiredKwh/capacity*100;
+    const expectedSurplus=Math.max(0,solar-consumption);
+    const headroom=Math.max(0,capacity-requiredKwh);
+    const spillRisk=Math.max(0,expectedSurplus-headroom);
+    const solarCheck=spillRisk<=0.01
+      ? "At the target, "+headroom.toFixed(1)+" kWh of battery space remains for about "+expectedSurplus.toFixed(1)+" kWh expected solar surplus."
+      : "At the target, only "+headroom.toFixed(1)+" kWh of space remains, below the "+expectedSurplus.toFixed(1)+" kWh expected surplus; some solar may not fit.";
+    const reason="Overnight use: "+s.baseLoadW+" W × "+s.overnightHours+" h = "+overnightUse.toFixed(1)+" kWh. Add the "+s.minimumSocPct.toFixed(0)+"% reserve ("+reserveKwh.toFixed(1)+" kWh) to get "+requiredKwh.toFixed(1)+" kWh total, or "+targetSoc.toFixed(0)+"% of your "+capacity.toFixed(1)+" kWh battery. Tomorrow: "+solar.toFixed(1)+" kWh solar − "+consumption.toFixed(1)+" kWh daily home use = "+expectedSurplus.toFixed(1)+" kWh potential surplus. "+solarCheck+" Solar is a headroom check; it does not raise the target.";
+    return {hasBattery:true,capacity,solar,consumption,overnightUse,reserveKwh,requiredKwh,targetSoc,expectedSurplus,headroom,spillRisk,solarCheck,reason};
   }
   function renderForecast(s,meteo) {
     const times=meteo[0].hourly.time, today=times[0].slice(0,10), tomorrow=times.find(t=>t.slice(0,10)!==today)?.slice(0,10);
@@ -86,20 +91,36 @@
     $("location").textContent=`${s.lat.toFixed(4)}, ${s.lon.toFixed(4)} · ${meteo[0].timezone||"local time"}`;$("updated").textContent=`Updated ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
     const day=vals.map((v,i)=>({t:times[i],v})).filter(x=>x.t.slice(0,10)===today), peak=Math.max(.05,...day.map(x=>x.v));
     $("hours").innerHTML=day.length?day.filter(x=>x.v>=.005||+x.t.slice(11,13)>=5).map(x=>{const t=localDateTime(x.t),h=`${String(t.hour).padStart(2,"0")}:00`,w=Math.max(1,Math.min(100,x.v/peak*100));return `<div class="hour" role="listitem"><span>${h}</span><div class="track" aria-label="${x.v.toFixed(2)} kilowatt-hours"><div class="fill" style="width:${w}%"></div></div><strong>${x.v.toFixed(2)} kWh</strong></div>`;}).join(""):"<div class=empty>No daylight generation is expected in the available forecast.</div>";
-    $("recommendation").innerHTML="<strong>Overnight guide:</strong> Add the amount shown above during the cheap-rate period if your battery has room. The overnight estimate is shown separately. Battery charge is not monitored.";
-
+    $("recommendation").innerHTML=charge.hasBattery?"<strong>Tonight’s target:</strong> Bring the battery to "+charge.targetSoc.toFixed(0)+"%. That covers the estimated overnight use plus your "+s.minimumSocPct+"% reserve. Tomorrow’s solar is used only to check there is room for the expected surplus.":"<strong>Overnight guide:</strong> Add a battery size to get a target SOC.";
     $("chargeCapacity").textContent=charge.hasBattery?s.battery.toFixed(1)+" kWh":"—";
-    $("chargeSolar").textContent=b.toFixed(1)+" kWh";$("chargeConsumption").textContent=s.dailyConsumption.toFixed(1)+" kWh";
-    $("chargeGrid").textContent=charge.hasBattery?charge.gridKwh.toFixed(1)+" kWh":"—";
-    $("chargeCost").textContent=charge.hasBattery?"£"+charge.cost.toFixed(2):"—";
-    $("chargeReason").textContent=charge.reason;$("chargeProfile").textContent="Overnight estimate: "+charge.overnightUse.toFixed(1)+" kWh. Bedtime charge is not measured.";
-    if(!charge.hasBattery){$("chargeAmount").textContent="—";$("chargeCaption").textContent="Add battery storage size";$("chargeSummary").textContent=charge.reason;}
-    else if(charge.add>0.05){$("chargeAmount").textContent=charge.add.toFixed(1)+" kWh";$("chargeCaption").textContent="into the battery · about "+charge.fraction.toFixed(0)+"% of capacity";$("chargeSummary").textContent="Add about "+charge.add.toFixed(1)+" kWh overnight. Bedtime charge is not measured.";}
-    else{$("chargeAmount").textContent="No top-up";$("chargeCaption").textContent="Solar after home use meets storage estimate";$("chargeSummary").textContent="No cheap-rate top-up suggested by this simple estimate.";}
-    forecastState={date:today,raw:rawToday,rawTomorrow,solar:a,tomorrow:b};
+    $("chargeOvernight").textContent=charge.hasBattery?charge.overnightUse.toFixed(1)+" kWh":"—";
+    $("chargeReserve").textContent=charge.hasBattery?s.minimumSocPct.toFixed(0)+"% · "+charge.reserveKwh.toFixed(1)+" kWh":"—";
+    $("chargeSolar").textContent=b.toFixed(1)+" kWh";
+    $("chargeHeadroom").textContent=charge.hasBattery?charge.headroom.toFixed(1)+" kWh":"—";
+    $("chargeReason").textContent=charge.reason;
+    $("chargeProfile").textContent=charge.hasBattery?charge.solarCheck:"Add a battery size to get a target.";
+    $("chargeAmount").textContent=charge.hasBattery?charge.targetSoc.toFixed(0)+"%":"—";
+    $("chargeCaption").textContent=charge.hasBattery?"minimum target SOC":"Add battery storage size";
+    $("chargeSummary").textContent=charge.hasBattery?"Reach "+charge.targetSoc.toFixed(0)+"% to cover the estimated overnight need and minimum reserve. Enter a starting SOC below only if you want the charge amount and cost estimate.":"Enter usable battery size to calculate a target.";
+    forecastState={date:today,raw:rawToday,rawTomorrow,solar:a,tomorrow:b,settings:s,charge};
     renderHistory();
+    renderTopupDetails();
     setStatus(`Forecast ready. Calibration adjustment: ${f.toFixed(2)}×. Weather changes can make real generation different.`,"ok");
   }
+  function renderTopupDetails() {
+    const ctx=forecastState,socText=$("startingSoc").value.trim(),stored=$("chargeStored"),grid=$("chargeGrid"),cost=$("chargeCost"),hint=$("startingSocHint");
+    if(!ctx||!ctx.charge.hasBattery){stored.textContent="—";grid.textContent="—";cost.textContent="—";return;}
+    if(!socText){stored.textContent="—";grid.textContent="—";cost.textContent="—";hint.textContent="Enter a SOC only if you want an estimate of energy and cost to reach the target.";hint.className="hint";return;}
+    const soc=Number(socText);
+    if(!Number.isFinite(soc)||soc<0||soc>100){stored.textContent="—";grid.textContent="—";cost.textContent="—";hint.textContent="Enter a battery level from 0% to 100%.";hint.className="hint status error";return;}
+    hint.className="hint";
+    const s=ctx.settings,c=ctx.charge,needKwh=Math.max(0,c.capacity*(c.targetSoc-soc)/100),gridKwh=needKwh/(s.efficiency/100),costP=gridKwh*s.nightPrice;
+    stored.textContent=needKwh.toFixed(1)+" kWh";
+    grid.textContent=gridKwh.toFixed(1)+" kWh";
+    cost.textContent="£"+(costP/100).toFixed(2);
+    hint.textContent=soc>=c.targetSoc?"Already at or above the target; no top-up is needed.":soc+"% → "+c.targetSoc.toFixed(0)+"%: add "+needKwh.toFixed(1)+" kWh to the battery. At "+s.efficiency+"% efficiency, that is about "+gridKwh.toFixed(1)+" kWh from the grid at "+s.nightPrice+"p/kWh.";
+  }
+  $("startingSoc").addEventListener("input",renderTopupDetails);
   async function refresh() {
     const s=readSettings(), problem=validate(s);if(problem){setStatus(problem,"error");$("updated").textContent="Check setup";return;}
     saveSettings(); const current=++requestId, controller=new AbortController();setStatus("Getting the latest weather estimate…");$("updated").textContent="Updating…";$("refreshTop").disabled=true;$("refreshTop").setAttribute("aria-busy","true");

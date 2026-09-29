@@ -1,5 +1,5 @@
-const CACHE = "sunwise-v8.10-shell";
-const SHELL = ["./", "./index.html", "./app-v8.js?v=8.10", "./manifest.webmanifest", "./icon.svg", "./privacy.html"];
+const CACHE = "sunwise-v8.11-shell";
+const SHELL = ["./", "./index.html", "./app-v8.js?v=8.11", "./manifest.webmanifest", "./icon.svg", "./privacy.html"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
