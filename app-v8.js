@@ -1,12 +1,13 @@
-/* Sunwise v8.7. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.8. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
   const SETTINGS_KEY = "solar-predict-settings-v8";
   const HISTORY_KEY = "solar-predict-history-v1";
+  const FLOW = window.BatteryFlow;
   const DEFAULTS = {
     arrays: [{name:"Pergola",kwp:2,tilt:0,azimuth:180},{name:"Garage",kwp:1,tilt:0,azimuth:155}],
-    battery:8,dailyConsumption:0,efficiency:79,dayPrice:31,nightPrice:9,lat:53.4143,lon:-3.0647
+    battery:8,dailyConsumption:5,efficiency:79,dayPrice:31,nightPrice:9,lat:53.4143,lon:-3.0647
   };
   let arrays = structuredClone(DEFAULTS.arrays);
   let forecastState = null;
@@ -63,11 +64,20 @@
   function estimate(gti,kwp,temp) { if(!Number.isFinite(+gti))return 0;const tempC=Number.isFinite(+temp)?+temp:15,thermal=1-Math.max(0,tempC-25)*.004;return Math.max(0,kwp*(Math.max(0,+gti)/1000)*.88*thermal); }
   function localDateTime(iso) { return {date:iso.slice(0,10),hour:+iso.slice(11,13),minute:+iso.slice(14,16)}; }
   function chargePlan(s,solarTomorrow) {
-    if(s.battery<=0)return {hasBattery:false,add:0,gridKwh:0,cost:0,fraction:0,reason:"Enter your battery storage size to get a simple charge estimate."};
-    const capacity=s.battery,solar=Math.max(0,solarTomorrow),consumption=Math.max(0,s.dailyConsumption),solarUsed=Math.min(solar,consumption),solarAfterUse=solar-solarUsed,add=Math.min(capacity,Math.max(0,capacity-solarAfterUse));
-    const fraction=add/capacity*100,gridKwh=add/Math.sqrt(s.efficiency/100),cost=gridKwh*s.nightPrice/100;
-    const reason=solar.toFixed(1)+" kWh solar − "+solarUsed.toFixed(1)+" kWh home use = "+solarAfterUse.toFixed(1)+" kWh solar left; "+capacity.toFixed(1)+" kWh battery − "+solarAfterUse.toFixed(1)+" kWh left = "+add.toFixed(1)+" kWh to add. The top-up cannot exceed your "+capacity.toFixed(1)+" kWh battery capacity. At "+s.efficiency+"% efficiency, the grid supplies roughly "+gridKwh.toFixed(1)+" kWh, costing about £"+cost.toFixed(2)+" at "+s.nightPrice.toFixed(1)+"p/kWh. This uses daily totals rather than hourly timing and does not depend on current battery charge.";
-    return {hasBattery:true,add,gridKwh,cost,fraction,solar,consumption,solarAfterUse,reason};
+    if(s.battery<=0)return {hasBattery:false,add:0,gridKwh:0,cost:0,fraction:0,reason:"Enter your battery storage size to get a simple charge estimate.",profile:null};
+    const capacity=s.battery,solar=Math.max(0,solarTomorrow),consumption=Math.max(0,s.dailyConsumption),profile=FLOW.profile();
+    let add,reason;
+    if(profile){
+      const solarSurplus=Math.max(0,solar-consumption),sunriseHeadroom=Math.max(0,capacity-solarSurplus),overnightUse=Math.min(capacity,profile.overnightUseKwh),sunriseTarget=Math.min(capacity,Math.max(overnightUse,sunriseHeadroom)),bedtimeKwh=capacity*profile.bedtimeSocPct/100;
+      add=Math.min(capacity,Math.max(0,sunriseTarget+overnightUse-bedtimeKwh));
+      reason="Recent pattern: about "+profile.bedtimeSocPct.toFixed(0)+"% ("+bedtimeKwh.toFixed(1)+" kWh) at bedtime and "+overnightUse.toFixed(1)+" kWh used overnight. Tomorrow: "+solar.toFixed(1)+" kWh solar − "+consumption.toFixed(1)+" kWh home use leaves "+solarSurplus.toFixed(1)+" kWh expected spare solar. We leave room for that solar and cover typical overnight use, so add "+add.toFixed(1)+" kWh into the battery. Grid input and cost allow for "+s.efficiency+"% charge efficiency. This is daily-total maths, not hourly modelling.";
+    } else {
+      const solarUsed=Math.min(solar,consumption),solarAfterUse=solar-solarUsed;
+      add=Math.min(capacity,Math.max(0,capacity-solarAfterUse));
+      reason=solar.toFixed(1)+" kWh solar − "+solarUsed.toFixed(1)+" kWh home use = "+solarAfterUse.toFixed(1)+" kWh left; "+capacity.toFixed(1)+" kWh battery − "+solarAfterUse.toFixed(1)+" kWh left = "+add.toFixed(1)+" kWh to add. No flow history is imported, so bedtime charge and overnight use are not estimated yet.";
+    }
+    const fraction=capacity?add/capacity*100:0,gridKwh=add/(s.efficiency/100),cost=gridKwh*s.nightPrice/100;
+    return {hasBattery:true,add,gridKwh,cost,fraction,solar,consumption,profile,reason};
   }
   function renderForecast(s,meteo) {
     const times=meteo[0].hourly.time, today=times[0].slice(0,10), tomorrow=times.find(t=>t.slice(0,10)!==today)?.slice(0,10);
@@ -80,15 +90,15 @@
     $("location").textContent=`${s.lat.toFixed(4)}, ${s.lon.toFixed(4)} · ${meteo[0].timezone||"local time"}`;$("updated").textContent=`Updated ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
     const day=vals.map((v,i)=>({t:times[i],v})).filter(x=>x.t.slice(0,10)===today), peak=Math.max(.05,...day.map(x=>x.v));
     $("hours").innerHTML=day.length?day.filter(x=>x.v>=.005||+x.t.slice(11,13)>=5).map(x=>{const t=localDateTime(x.t),h=`${String(t.hour).padStart(2,"0")}:00`,w=Math.max(1,Math.min(100,x.v/peak*100));return `<div class="hour" role="listitem"><span>${h}</span><div class="track" aria-label="${x.v.toFixed(2)} kilowatt-hours"><div class="fill" style="width:${w}%"></div></div><strong>${x.v.toFixed(2)} kWh</strong></div>`;}).join(""):"<div class=empty>No daylight generation is expected in the available forecast.</div>";
-    $("recommendation").innerHTML="<strong>Simple overnight guide:</strong> Add the amount shown above during your cheap-rate period, if your battery has room. It compares tomorrow’s solar with your typical daily home use, then caps the estimate at your battery’s capacity.";
+    $("recommendation").innerHTML="<strong>Overnight guide:</strong> Add the amount shown above during the cheap-rate period if your battery has room. Recent battery history improves the bedtime and overnight-use estimates; without it, this is a simpler estimate.";
 
     $("chargeCapacity").textContent=charge.hasBattery?s.battery.toFixed(1)+" kWh":"—";
     $("chargeSolar").textContent=b.toFixed(1)+" kWh";$("chargeConsumption").textContent=s.dailyConsumption.toFixed(1)+" kWh";
     $("chargeGrid").textContent=charge.hasBattery?charge.gridKwh.toFixed(1)+" kWh":"—";
     $("chargeCost").textContent=charge.hasBattery?"£"+charge.cost.toFixed(2):"—";
-    $("chargeReason").textContent=charge.reason;
+    $("chargeReason").textContent=charge.reason;$("chargeProfile").textContent=charge.profile?"Recent "+charge.profile.nights+"-night pattern: bedtime charge ~"+charge.profile.bedtimeSocPct.toFixed(0)+"%, overnight use ~"+charge.profile.overnightUseKwh.toFixed(1)+" kWh.":"No battery history imported yet; using the simpler solar-versus-use estimate.";
     if(!charge.hasBattery){$("chargeAmount").textContent="—";$("chargeCaption").textContent="Add battery storage size";$("chargeSummary").textContent=charge.reason;}
-    else if(charge.add>0.05){$("chargeAmount").textContent=charge.add.toFixed(1)+" kWh";$("chargeCaption").textContent="into the battery · about "+charge.fraction.toFixed(0)+"% of capacity";$("chargeSummary").textContent="Add about "+charge.add.toFixed(1)+" kWh overnight. Your current battery charge is not used in this calculation.";}
+    else if(charge.add>0.05){$("chargeAmount").textContent=charge.add.toFixed(1)+" kWh";$("chargeCaption").textContent="into the battery · about "+charge.fraction.toFixed(0)+"% of capacity";$("chargeSummary").textContent=charge.profile?"Estimated bedtime charge "+charge.profile.bedtimeSocPct.toFixed(0)+"%; typical overnight use "+charge.profile.overnightUseKwh.toFixed(1)+" kWh. Add about "+charge.add.toFixed(1)+" kWh overnight.":"Add about "+charge.add.toFixed(1)+" kWh overnight. Import battery-flow history to estimate bedtime charge and overnight use.";}
     else{$("chargeAmount").textContent="No top-up";$("chargeCaption").textContent="Solar after home use meets storage estimate";$("chargeSummary").textContent="No cheap-rate top-up suggested by this simple estimate.";}
     forecastState={date:today,raw:rawToday,rawTomorrow,solar:a,tomorrow:b};
     renderHistory();
@@ -104,8 +114,12 @@
   $("save").addEventListener("click",refresh);
   $("refreshTop").addEventListener("click",refresh);
   $("gps").addEventListener("click",()=>{if(!navigator.geolocation){setStatus("Location is not available in this browser. Enter latitude and longitude instead.","error");return;}setStatus("Waiting for your device location permission…");navigator.geolocation.getCurrentPosition(p=>{$("lat").value=p.coords.latitude.toFixed(4);$("lon").value=p.coords.longitude.toFixed(4);refresh();},e=>{const msg=e.code===1?"Location permission was declined. You can type in your coordinates instead.":"Couldn’t get your location. Check device location is enabled, or type in your coordinates.";setStatus(msg,"error");},{enableHighAccuracy:false,timeout:12000,maximumAge:600000});});
+  $("downloadFlowTemplate").addEventListener("click",()=>FLOW.downloadTemplate());
+  $("exportFlowHistory").addEventListener("click",()=>{if(!FLOW.get().length){$("flowStatus").textContent="There is no imported history to export yet.";return;}FLOW.downloadSummary();$("flowStatus").textContent="Portable history file downloaded.";});
+  $("flowCsv").addEventListener("change",async e=>{const file=e.target.files?.[0];if(!file)return;try{const count=FLOW.import(await file.text());renderFlowHistory();$("flowStatus").textContent="Imported "+count+" night"+(count===1?"":"s")+". History stays on this device.";refresh();}catch(err){$("flowStatus").textContent=err.message||"Could not read that CSV. Your existing history is unchanged.";$("flowStatus").className="status error";}finally{e.target.value="";}});
   $("recordActual").addEventListener("click",()=>{const actual=Number($("actualToday").value);if(!Number.isFinite(actual)||actual<0||actual>500){setStatus("Enter a real inverter total from 0 to 500 kWh.","error");return;}if(!forecastState){setStatus("Get a forecast first, then save the finished day’s inverter total.","error");return;}const h=getHistory().filter(x=>x.date!==forecastState.date);h.push({date:forecastState.date,raw:forecastState.raw,actual});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(h.slice(-30)));$("actualToday").value="";renderHistory();setStatus(`Reading saved for ${forecastState.date}. Future forecasts will learn from it.`,"ok");refresh();}catch{setStatus("Could not save the reading. Check that browser storage is enabled.","error");}});
   for(const id of ["battery","dailyConsumption","efficiency","dayPrice","nightPrice","lat","lon"]) $(id).addEventListener("change",saveSettings);
-  loadSettings();renderArrays();renderHistory();refresh();
+  function renderFlowHistory(){const p=FLOW.profile(),n=FLOW.get().length;$("flowSummary").textContent=p?"Learning from "+n+" imported nights: typical bedtime charge about "+p.bedtimeSocPct.toFixed(0)+"%, overnight battery use about "+p.overnightUseKwh.toFixed(1)+" kWh. Stored on this device; export it any time.":"No flow data imported. The simple estimate still works; import history to estimate bedtime charge and overnight use.";}
+  loadSettings();renderArrays();renderHistory();renderFlowHistory();refresh();
 })();
 
