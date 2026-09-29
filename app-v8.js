@@ -35,7 +35,7 @@
     const limits={battery:[0,100],minimumSocPct:[0,100],weekdayConsumption:[0,100],weekendConsumption:[0,100],baseLoadW:[0,10000],overnightHours:[1,16],efficiency:[50,100],dayPrice:[0,500],nightPrice:[0,500],chargePowerW:[100,10000],lat:[-90,90],lon:[-180,180]};
     const labels={battery:"Battery size",minimumSocPct:"Minimum battery reserve",weekdayConsumption:"Weekday expected use",weekendConsumption:"Weekend expected use",baseLoadW:"Overnight base load",overnightHours:"Overnight hours",efficiency:"Battery efficiency",dayPrice:"Day rate",nightPrice:"Cheap rate",chargePowerW:"Charge rate",lat:"Latitude",lon:"Longitude"};
     for(const [id,[min,max]] of Object.entries(limits)) { const v=s[id]; if(!Number.isFinite(v)||v<min||v>max)return `${labels[id]} must be between ${min} and ${max}${id.includes("Price")?" p/kWh":""}.`; }
-    if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(s.cheapRateEnd))return "Cheap-rate end must be a valid time.";
+    if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(s.cheapRateEnd))return "Cheap-rate end must be a valid time.";
     return "";
   }
   function saveSettings() { try { localStorage.setItem(SETTINGS_KEY,JSON.stringify(readSettings())); return true; } catch { setStatus("This browser could not save your settings. Check that site storage is enabled.","error"); return false; } }
