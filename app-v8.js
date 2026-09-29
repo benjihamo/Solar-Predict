@@ -1,4 +1,4 @@
-/* Sunwise v8.8. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.9. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
@@ -43,6 +43,8 @@
     let s=null, fromV7=false; try{s=JSON.parse(localStorage.getItem(SETTINGS_KEY)||"null");}catch{}
     if(!s) { try{s=JSON.parse(localStorage.getItem("solar-predict-settings-v7")||"null");fromV7=!!s;}catch{} }
     s={...DEFAULTS,...(s||{})};
+    const dailyDefaultMigration="solar-predict-daily-use-default-v1";
+    try { if(!localStorage.getItem(dailyDefaultMigration)&&s.dailyConsumption===0)s.dailyConsumption=5; localStorage.setItem(dailyDefaultMigration,"1"); } catch {}
     if(fromV7){s.dayPrice=Number(s.dayPrice)*100;s.nightPrice=Number(s.nightPrice)*100;}
     if(Array.isArray(s.arrays)&&s.arrays.length) arrays=s.arrays.slice(0,4).map(a=>({...a}));
     for(const id of ["battery","dailyConsumption","efficiency","dayPrice","nightPrice","lat","lon"]) if($(id))$(id).value=s[id];  }
