@@ -1,4 +1,4 @@
-/* Sunwise v8. The v7 engine remains available in app-v7.js. */
+/* Sunwise v8.5. The v7 engine remains available in app-v7.js. */
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
@@ -80,7 +80,7 @@
     $("location").textContent=`${s.lat.toFixed(4)}, ${s.lon.toFixed(4)} · ${meteo[0].timezone||"local time"}`;$("updated").textContent=`Updated ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
     const day=vals.map((v,i)=>({t:times[i],v})).filter(x=>x.t.slice(0,10)===today), peak=Math.max(.05,...day.map(x=>x.v));
     $("hours").innerHTML=day.length?day.filter(x=>x.v>=.005||+x.t.slice(11,13)>=5).map(x=>{const t=localDateTime(x.t),h=`${String(t.hour).padStart(2,"0")}:00`,w=Math.max(1,Math.min(100,x.v/peak*100));return `<div class="hour" role="listitem"><span>${h}</span><div class="track" aria-label="${x.v.toFixed(2)} kilowatt-hours"><div class="fill" style="width:${w}%"></div></div><strong>${x.v.toFixed(2)} kWh</strong></div>`;}).join(""):"<div class=empty>No daylight generation is expected in the available forecast.</div>";
-    $("recommendation").innerHTML="<strong>Simple overnight guide:</strong> See the suggested charge target above. Check the rate and charge limit set on your battery before changing it.";
+    $("recommendation").innerHTML="<strong>Simple overnight guide:</strong> Add the amount shown above during your cheap-rate period, if your battery has room. The estimate is battery storage minus tomorrow’s solar; it ignores current charge and household use.";
 
     $("chargeCapacity").textContent=charge.hasBattery?s.battery.toFixed(1)+" kWh":"—";
     $("chargeSolar").textContent=b.toFixed(1)+" kWh";
